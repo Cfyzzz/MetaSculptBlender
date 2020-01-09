@@ -53,11 +53,7 @@ def main_active(context, event):
         ray_direction_obj = ray_target_obj - ray_origin_obj
 
         # cast the ray
-        # if obj.type != 'META':
         success, location, normal, face_index = obj.ray_cast(ray_origin_obj, ray_direction_obj)
-        # else:
-        # success = None
-
         if success:
             return location, normal, face_index
         else:
@@ -68,7 +64,6 @@ def main_active(context, event):
     best_obj = None
 
     for obj, matrix in visible_objects_and_duplis():
-        # if obj.type in valid_types:
         if obj.type in valid_types_mesh:
             hit, normal, face_index = obj_ray_cast(obj, matrix)
             if hit is not None:
@@ -134,9 +129,6 @@ class SculptExtrudeOperator(bpy.types.Operator):
             new_sphere.hide = True
             bpy.context.scene.objects.active = self.actObj
             self.spheres.append(new_sphere)
-            # self.addArr(new_sphere)
-            # new_ph = (location, object)
-            # self.phantom_spheres.append()
 
         return obj_new
 
@@ -197,26 +189,12 @@ class SculptExtrudeOperator(bpy.types.Operator):
             context.scene.objects.active = self.sculptObj
             self.sculptObj.select = True
             for msh in arm_tmp:
-
                 if msh.name == self.sculptObj.name:
-                    # self.arr_mesh.pop(self.arr_mesh.index(msh))
                     continue
 
                 msh.select = True
                 self.arr_mesh.pop(self.arr_mesh.index(msh))
 
-                """
-                bpy.ops.object.make_single_user(object=True, obdata=True)
-                bpy.ops.object.modifier_add(type='BOOLEAN')
-                modbool = self.sculptObj.modifiers[-1]
-                modbool.object = msh
-                modbool.operation = 'UNION'
-                bpy.ops.object.modifier_apply(apply_as='DATA', modifier=modbool.name)
-                self.sculptObj.select = False
-                context.scene.objects.active = msh
-                self.arr_mesh.pop(self.arr_mesh.index(msh))
-                msh.select = True
-                bpy.ops.object.delete()"""
             if len(arm_tmp) > 0:
                 bpy.ops.object.booltron_union()
 
@@ -298,7 +276,7 @@ class SculptExtrudeOperator(bpy.types.Operator):
         elif event.type == 'WHEELDOWNMOUSE' and event.shift:
             if context.active_object.type == 'META':
                 bpy.data.metaballs[0].resolution -= 0.1
-        elif event.type == 'MOUSEMOVE' and self.doPick and not self.moved:
+        elif event.type == 'MOUSEMOVE' and self.doPick: # and not self.moved:
             self.moved = True
             origin = self.getOrigin(context, event, False)
             self.drawObj.location = origin
@@ -306,7 +284,7 @@ class SculptExtrudeOperator(bpy.types.Operator):
             self.move(context)
             self.moved = False
         elif event.type == 'LEFTMOUSE' and event.value == 'PRESS' \
-                and self.doPick is False and self.brushObj is not None:  # and self.start_meta==False:
+                and self.doPick is False and self.brushObj is not None: 
             self.doPick = True
             self.moved = False
             ma = main_active(context, event)
@@ -342,14 +320,13 @@ class SculptExtrudeOperator(bpy.types.Operator):
             return {'PASS_THROUGH'}
 
 
-        elif event.type in {'ESC'}:  # or \
-            # self.doPick and (event.mouse_region_x<0 or event.mouse_region_y<0):
+        elif event.type in {'ESC'}: 
             # print(event.mouse_region_x , event.mouse_region_y)
             return {'FINISHED'}
         elif event.type in {'SPACE'}:
+            # Объеднить геометрию
             self.arr_mesh = self.arr_mesh_all
             self.finishDraw(context)
-            # self.sculptObj = None
             self.arr_mesh_all = []
 
         elif event.type in {'Z'}:
@@ -360,7 +337,7 @@ class SculptExtrudeOperator(bpy.types.Operator):
         return {'RUNNING_MODAL'}
 
     def pushArrMesh(self):
-        # сбрасываем всё в обий массив и обнуляем мазок
+        # сбрасываем всё в общий массив и обнуляем мазок
         self.arr_mesh_all.extend(self.arr_mesh)
         self.arr_mesh = []
         if self.sculptObj and self.sculptObj not in self.arr_mesh_all:
@@ -437,4 +414,3 @@ if __name__ == "__main__":
         reload(booltronoperator)
         del reload
         bpy.utils.register_class(booltronoperator.UNION)
-
